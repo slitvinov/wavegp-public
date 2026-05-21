@@ -35,12 +35,18 @@
 # so 256² ≈ 8× and 512² ≈ 64× the 128² run.  Enable them in `RESOLUTIONS`.
 
 # %% [markdown]
-# ## 1. Imports
+# ## 1. Dependencies
+#
+# Colab already ships gcc, curl, numpy, matplotlib and pillow.  The one extra
+# dependency is [`amriso`](https://github.com/cselab/amriso) — the AMR
+# iso-line extraction library used to draw the vorticity contours.
 
 # %%
-# Colab already ships gcc, curl, numpy, matplotlib and pillow, so there
-# is nothing to install -- only the standard library is imported here.
 import os, sys, subprocess, shutil
+
+if "google.colab" in sys.modules:
+    subprocess.run([sys.executable, "-m", "pip", "-q", "install",
+                    "git+https://github.com/cselab/amriso"], check=True)
 
 # %% [markdown]
 # ## 2. Configuration
@@ -2423,37 +2429,43 @@ for size in RESOLUTIONS:
 
 # %% [markdown]
 # ## 8. Comparison: paper vs computed
+#
+# The computed vorticity iso-lines are extracted directly from the AMR cell
+# dump with `amriso.extract2d` — the same routine the upstream CUP2D tools
+# use.
 
 # %%
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.collections import LineCollection
 from PIL import Image
+import amriso
 
-BS = 8  # cells per block
+# Brown & Minion contour levels: -36..36 by 6, excluding 0
+LEVELS = [float(l) for l in range(-36, 37, 6) if l != 0]
 
-def read_vort(path, N):
-    """Reassemble an NxN vorticity field from the block-ordered raw dump."""
-    nb = N // BS
-    data = np.fromfile(path, dtype=np.float64)
-    grid = np.zeros((N, N))
-    for b in range(nb * nb):
-        bx, by = b % nb, b // nb
-        blk = data[b * BS * BS:(b + 1) * BS * BS].reshape(BS, BS)
-        grid[by * BS:(by + 1) * BS, bx * BS:(bx + 1) * BS] = blk
-    return grid
+def load_dump(prefix):
+    """Load AMR cell geometry (.xyz.raw, 4 corners/cell) and the
+    vorticity field (.vort.raw)."""
+    coords = np.fromfile(f"{prefix}.xyz.raw", dtype=np.float32)
+    vort = np.fromfile(f"{prefix}.vort.raw", dtype=np.float64)
+    coords = coords.reshape(vort.size, 4, 2)
+    return coords, vort.astype(np.float32)
 
-def plot_vort(ax, w, N):
-    h = 1.0 / N
-    x = np.linspace(h / 2, 1 - h / 2, N)
-    X, Y = np.meshgrid(x, x)
-    lv = np.arange(-36, 37, 6)
-    lv = lv[lv != 0]
-    ax.contour(X, Y, w, levels=lv, colors="k", linewidths=1.0)
-    ax.set_aspect("equal")
+def plot_isolines(ax, coords, scalar):
+    """Draw vorticity iso-lines with amriso.extract2d."""
+    geo = coords.reshape(-1)
+    sc = scalar.astype(np.float32)
+    for lev in LEVELS:
+        xy, seg, attr = amriso.extract2d(geo, sc, sc, lev)
+        if len(seg):
+            ax.add_collection(LineCollection(xy[seg], colors="k",
+                                             linewidths=0.7))
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
+    ax.set_aspect("equal")
     ax.set_xticks([])
     ax.set_yticks([])
 
@@ -2473,8 +2485,8 @@ for row, N in enumerate(RESOLUTIONS):
         axes[row, paper_col].set_xticks([])
         axes[row, paper_col].set_yticks([])
         try:
-            w = read_vort(f"run{N}/vel.{dump_idx:08d}.vort.raw", N)
-            plot_vort(axes[row, comp_col], w, N)
+            coords, vort = load_dump(f"run{N}/vel.{dump_idx:08d}")
+            plot_isolines(axes[row, comp_col], coords, vort)
         except Exception as e:
             print("computed", N, figkey, "-", e)
     axes[row, 0].set_ylabel(f"{N}²", fontsize=13, fontweight="bold")
