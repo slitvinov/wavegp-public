@@ -35,18 +35,12 @@
 # so 256² ≈ 8× and 512² ≈ 64× the 128² run.  Enable them in `RESOLUTIONS`.
 
 # %% [markdown]
-# ## 1. Dependencies
+# ## 1. Imports
 
 # %%
-import sys, os, subprocess, shutil
-
-IN_COLAB = "google.colab" in sys.modules
-print("Colab:", IN_COLAB)
-
-if IN_COLAB:
-    subprocess.run("apt-get -qq install -y gcc >/dev/null", shell=True)
-    subprocess.run([sys.executable, "-m", "pip", "-q", "install",
-                    "numpy", "matplotlib", "pillow"], check=True)
+# Colab already ships gcc, curl, numpy, matplotlib and pillow, so there
+# is nothing to install -- only the standard library is imported here.
+import os, sys, subprocess, shutil
 
 # %% [markdown]
 # ## 2. Configuration
