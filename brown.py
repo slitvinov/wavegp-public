@@ -2430,10 +2430,6 @@ for size in RESOLUTIONS:
 
 # %% [markdown]
 # ## 8. Comparison: paper vs computed
-#
-# The computed vorticity iso-lines are extracted directly from the AMR cell
-# dump with `amriso.extract2d` — the same routine the upstream CUP2D tools
-# use.
 
 # %%
 import numpy as np
