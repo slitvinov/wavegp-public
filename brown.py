@@ -47,9 +47,6 @@ if IN_COLAB:
     subprocess.run("apt-get -qq install -y gcc >/dev/null", shell=True)
     subprocess.run([sys.executable, "-m", "pip", "-q", "install",
                     "numpy", "matplotlib", "pillow"], check=True)
-    # amriso provides the lifted-wavelet stencils gen_table.py needs
-    subprocess.run([sys.executable, "-m", "pip", "-q", "install",
-                    "git+https://github.com/cselab/amriso"], check=True)
 
 # %% [markdown]
 # ## 2. Configuration
@@ -2386,9 +2383,9 @@ for N in RESOLUTIONS:
         print("fetched", rel)
 
 # %% [markdown]
-# ## 5. Generate the lifted-wavelet stencil tables
+# ## 5. Generate the stencil tables
 #
-# `gen_table.py` (uses `amriso`) writes the `tab_*.bin` files the solver loads.
+# `gen_table.py` (pure Python) writes the `tab_*.bin` files the solver loads.
 
 # %%
 if not os.path.exists("tab_ss1_dim1.bin"):
