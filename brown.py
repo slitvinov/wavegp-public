@@ -2400,8 +2400,8 @@ print("built ./main")
 # %% [markdown]
 # ## 7. Run
 #
-# Uniform grid (`-AdaptSteps 0`), ν = 1e-4, CFL = 0.8, to t = 2.0 with dumps
-# every 0.4 — so dump index 2 is t=0.8 (Fig. 2) and index 3 is t=1.2 (Fig. 3).
+# Uniform grid (`-AdaptSteps 0`), ν = 1e-4, CFL = 0.8, run to t = 1.2 with
+# dumps every 0.4 — dump index 2 is t=0.8 (Fig. 2), index 3 is t=1.2 (Fig. 3).
 
 # %%
 def run(size):
@@ -2417,7 +2417,7 @@ def run(size):
     subprocess.run(
         ["../main", "-levelStart", str(level), "-levelMax", str(level),
          "-AdaptSteps", "0", "-Rtol", "0", "-Ctol", "0",
-         "-nu", "1e-4", "-CFL", "0.8", "-tend", "2.0", "-tdump", "0.4"],
+         "-nu", "1e-4", "-CFL", "0.8", "-tend", "1.2", "-tdump", "0.4"],
         cwd=out, check=True)
 
 for size in RESOLUTIONS:
