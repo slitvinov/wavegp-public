@@ -1344,8 +1344,7 @@ def plot_vort(ax, w, N):
     h = 1.0 / N
     x = np.linspace(h / 2, 1 - h / 2, N)
     X, Y = np.meshgrid(x, x)
-    lv = np.arange(-36, 37, 6)
-    lv = lv[lv != 0]
+    lv = np.arange(-36, 37, 6)  # -36..36 by 6, incl 0 (paper: FROM -36 TO 36 BY 6)
     ax.contour(X, Y, w, levels=lv, colors="k", linewidths=1.0)
     ax.set_aspect("equal")
     ax.set_xlim(0, 1)
