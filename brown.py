@@ -1802,7 +1802,8 @@ int main(int argc, char **argv) {
     }
     sim.dt = sim.CFL / (smax + 1e-30);
 
-    if (sim.step > 0 && sim.step % sim.AdaptSteps == 0) ad_run();
+    if (sim.AdaptSteps > 0 && sim.step > 0 && sim.step % sim.AdaptSteps == 0)
+      ad_run();
 
     /* Projection method time step */
     advect_diffuse(sim.dt);       /* Godunov advection → RHS in F_U, F_V */
